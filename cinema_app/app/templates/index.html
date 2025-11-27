@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-bottom: 60px;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .card {
+            transition: transform 0.2s;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .stat-card {
+            border-left: 4px solid;
+        }
+        .movie-card {
+            cursor: pointer;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/ui">
+                <i class="bi bi-film"></i> Cinema System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ui">
+                            <i class="bi bi-house"></i> Главная
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ui/movies">
+                            <i class="bi bi-film"></i> Фильмы
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <!-- Информация о пользователе или кнопка входа -->
+                    <li class="nav-item" id="user-menu">
+                        <a class="btn btn-outline-light" href="/ui/login">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="hero text-center">
+            <h1 class="display-4">🎬 Cinema Management System</h1>
+            <p class="lead">Добро пожаловать в систему управления кинотеатром</p>
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.3);">
+            <p>Управление фильмами, сеансами, билетами и аналитикой</p>
+        </div>
+
+        <h2 class="mb-3"><i class="bi bi-bar-chart"></i> Статистика</h2>
+        <div class="row mb-4" id="stats-container">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card border-primary">
+                    <div class="card-body text-center">
+                        <i class="bi bi-film display-4 text-primary"></i>
+                        <h3 class="mt-2" id="movies-count">
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </h3>
+                        <p class="text-muted mb-0">Фильмов</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card border-success">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people display-4 text-success"></i>
+                        <h3 class="mt-2" id="users-count">
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </h3>
+                        <p class="text-muted mb-0">Пользователей</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card border-warning">
+                    <div class="card-body text-center">
+                        <i class="bi bi-calendar-event display-4 text-warning"></i>
+                        <h3 class="mt-2" id="showtimes-count">
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </h3>
+                        <p class="text-muted mb-0">Сеансов</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card border-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-ticket display-4 text-info"></i>
+                        <h3 class="mt-2" id="tickets-count">
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </h3>
+                        <p class="text-muted mb-0">Билетов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mb-3"><i class="bi bi-star-fill text-warning"></i> Популярные фильмы</h2>
+        <div id="popular-movies" class="row mb-4">
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="movieModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="movieTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="movieDetails"></div>
+                    
+                    <hr>
+                    <h5><i class="bi bi-star"></i> Отзывы</h5>
+                    <div id="movieReviews"></div>
+                    
+                    <div id="reviewForm" class="d-none mt-3">
+                        <h6>Оставить отзыв</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Оценка</label>
+                            <select class="form-select" id="reviewRating">
+                                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4)</option>
+                                <option value="3">⭐⭐⭐ (3)</option>
+                                <option value="2">⭐⭐ (2)</option>
+                                <option value="1">⭐ (1)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Комментарий</label>
+                            <textarea class="form-control" id="reviewComment" rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="submitReview()">Отправить отзыв</button>
+                    </div>
+                    
+                    <div id="reviewLoginPrompt" class="alert alert-info d-none">
+                        Войдите, чтобы оставить отзыв: <a href="/ui/login">Войти</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-success" onclick="showBuyTicketModal()">
+                        <i class="bi bi-ticket"></i> Купить билет
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="buyTicketModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Купить билет</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="ticketForm">
+                        <div class="mb-3">
+                            <label class="form-label">Сеанс</label>
+                            <select class="form-select" id="showtimeSelect">
+                                <option value="">Загрузка...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Место</label>
+                            <input type="number" class="form-control" id="seatInput" placeholder="Номер места">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Цена (базовая)</label>
+                            <input type="number" class="form-control" id="priceInput" value="500" step="0.01">
+                            <small class="text-muted">Итоговая цена может измениться из-за динамического ценообразования</small>
+                        </div>
+                    </div>
+                    <div id="ticketLoginPrompt" class="alert alert-info d-none">
+                        Войдите, чтобы купить билет: <a href="/ui/login">Войти</a>
+                    </div>
+                    <div id="ticketSuccess" class="alert alert-success d-none"></div>
+                    <div id="ticketError" class="alert alert-danger d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" onclick="buyTicket()">Купить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-5 py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">
+                © 2024 Cinema Management System | 
+                <a href="/docs" target="_blank">API</a> | 
+                Powered by FastAPI + PostgreSQL
+            </span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script>
+        let currentUser = null;
+        let currentMovieId = null;
+        const movieModal = new bootstrap.Modal(document.getElementById('movieModal'));
+        const buyTicketModal = new bootstrap.Modal(document.getElementById('buyTicketModal'));
+
+        // Проверка авторизации
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const response = await axios.get('/auth/me', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                currentUser = response.data;
+                updateUserMenu();
+            } catch (error) {
+                localStorage.removeItem('token');
+            }
+        }
+
+        // Обновление меню пользователя
+        function updateUserMenu() {
+            const userMenu = document.getElementById('user-menu');
+            if (currentUser) {
+                userMenu.innerHTML = `
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> ${currentUser.email}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><span class="dropdown-item-text"><small>Возраст: ${currentUser.age || 'N/A'}</small></span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </a></li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // Выход
+        function logout() {
+            localStorage.removeItem('token');
+            currentUser = null;
+            location.reload();
+        }
+
+        // Загрузка статистики
+        async function loadStats() {
+    try {
+        console.log('Loading stats...');
+        const response = await axios.get('/analytics/stats');
+        const stats = response.data;
+
+        console.log('Stats loaded:', stats);
+
+        document.getElementById('movies-count').textContent = stats.movies || 0;
+        document.getElementById('users-count').textContent = stats.users || 0;
+        document.getElementById('showtimes-count').textContent = stats.showtimes || 0;
+        document.getElementById('tickets-count').textContent = stats.tickets || 0;
+
+    } catch (error) {
+        console.error('Ошибка загрузки статистики:', error);
+
+        // Показываем 0 если ошибка
+        document.getElementById('movies-count').textContent = '0';
+        document.getElementById('users-count').textContent = '0';
+        document.getElementById('showtimes-count').textContent = '0';
+        document.getElementById('tickets-count').textContent = '0';
+    }
+}
+
+        // Загрузка популярных фильмов
+        async function loadPopularMovies() {
+            try {
+                const response = await axios.get('/analytics/popular-movies?limit=6');
+                const movies = response.data;
+                
+                const container = document.getElementById('popular-movies');
+                
+                if (movies.length === 0) {
+                    container.innerHTML = '<div class="col-12"><p class="text-center text-muted">Нет данных</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = movies.map(movie => `
+                    <div class="col-md-4 mb-3">
+                        <div class="card movie-card" onclick="showMovieDetails(${movie.id})">
+                            <div class="card-body">
+                                <h5 class="card-title">${movie.title}</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-star-fill"></i> ${movie.rating || 'N/A'}
+                                    </span>
+                                    <small class="text-muted">
+                                        <i class="bi bi-ticket"></i> ${movie.tickets_sold} билетов
+                                    </small>
+                                </div>
+                                <button class="btn btn-sm btn-primary mt-2 w-100">
+                                    Подробнее
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Ошибка загрузки фильмов:', error);
+            }
+        }
+
+        // Показать детали фильма
+        async function showMovieDetails(movieId) {
+            currentMovieId = movieId;
+            
+            try {
+                const [movieResponse, reviewsResponse] = await Promise.all([
+                    axios.get(`/movies/${movieId}`),
+                    axios.get(`/reviews/movie/${movieId}`)
+                ]);
+                
+                const movie = movieResponse.data;
+                const reviews = reviewsResponse.data;
+                
+                document.getElementById('movieTitle').textContent = movie.title;
+                document.getElementById('movieDetails').innerHTML = `
+                    <p><strong>Описание:</strong> ${movie.description || 'Нет описания'}</p>
+                    <p><strong>Рейтинг:</strong> ⭐ ${movie.rating || 'N/A'}</p>
+                    <p><strong>Длительность:</strong> ${movie.duration || 'N/A'}</p>
+                    <p><strong>Дата выхода:</strong> ${movie.release_date || 'N/A'}</p>
+                `;
+                
+                // Отзывы
+                const reviewsHtml = reviews.length > 0 
+                    ? reviews.map(r => `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <strong>${r.user_email || 'Аноним'}</strong>
+                                    <span class="badge bg-warning text-dark">${'⭐'.repeat(r.rating)}</span>
+                                </div>
+                                <p class="mb-0 mt-2">${r.comment || ''}</p>
+                                <small class="text-muted">${new Date(r.created_at).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `).join('')
+                    : '<p class="text-muted">Нет отзывов</p>';
+                
+                document.getElementById('movieReviews').innerHTML = reviewsHtml;
+                
+                // Форма отзыва
+                if (currentUser) {
+                    document.getElementById('reviewForm').classList.remove('d-none');
+                    document.getElementById('reviewLoginPrompt').classList.add('d-none');
+                } else {
+                    document.getElementById('reviewForm').classList.add('d-none');
+                    document.getElementById('reviewLoginPrompt').classList.remove('d-none');
+                }
+                
+                movieModal.show();
+                
+            } catch (error) {
+                alert('Ошибка загрузки фильма');
+            }
+        }
+
+        // Отправить отзыв
+        async function submitReview() {
+            if (!currentUser) {
+                alert('Войдите, чтобы оставить отзыв');
+                return;
+            }
+            
+            const rating = parseInt(document.getElementById('reviewRating').value);
+            const comment = document.getElementById('reviewComment').value;
+            
+            try {
+                await axios.post('/reviews/', {
+                    movie_id: currentMovieId,
+                    rating: rating,
+                    comment: comment
+                }, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                
+                alert('✅ Отзыв добавлен! Рейтинг фильма обновлен.');
+                movieModal.hide();
+                loadPopularMovies(); // Обновляем список
+                
+            } catch (error) {
+                alert('Ошибка: ' + (error.response?.data?.detail || error.message));
+            }
+        }
+
+        // Показать форму покупки билета
+        async function showBuyTicketModal() {
+            if (!currentUser) {
+                document.getElementById('ticketForm').classList.add('d-none');
+                document.getElementById('ticketLoginPrompt').classList.remove('d-none');
+            } else {
+                document.getElementById('ticketForm').classList.remove('d-none');
+                document.getElementById('ticketLoginPrompt').classList.add('d-none');
+                
+                // Загружаем сеансы (здесь упрощенно, можно доработать)
+                document.getElementById('showtimeSelect').innerHTML = `
+                    <option value="1">Сегодня 15:00</option>
+                    <option value="2">Сегодня 18:00</option>
+                    <option value="3">Завтра 12:00</option>
+                `;
+            }
+            
+            buyTicketModal.show();
+        }
+
+        // Купить билет
+        async function buyTicket() {
+            if (!currentUser) {
+                alert('Войдите, чтобы купить билет');
+                return;
+            }
+            
+            const showtimeId = document.getElementById('showtimeSelect').value;
+            const seatId = document.getElementById('seatInput').value;
+            const price = document.getElementById('priceInput').value;
+            
+            if (!showtimeId || !seatId || !price) {
+                alert('Заполните все поля');
+                return;
+            }
+            
+            try {
+                const response = await axios.post('/tickets/', {
+                    showtime_id: parseInt(showtimeId),
+                    seat_id: parseInt(seatId),
+                    price: parseFloat(price)
+                }, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                
+                const finalPrice = response.data.price;
+                const priceChanged = Math.abs(finalPrice - parseFloat(price)) > 0.01;
+                
+                let message = '✅ Билет куплен!';
+                if (priceChanged) {
+                    message += `\nСработал триггер динамического ценообразования!\nИтоговая цена: ${finalPrice}₽ (было: ${price}₽)`;
+                }
+                
+                document.getElementById('ticketSuccess').textContent = message;
+                document.getElementById('ticketSuccess').classList.remove('d-none');
+                document.getElementById('ticketError').classList.add('d-none');
+                
+            } catch (error) {
+                const errorMsg = error.response?.data?.detail || error.message;
+                document.getElementById('ticketError').textContent = '❌ ' + errorMsg;
+                document.getElementById('ticketError').classList.remove('d-none');
+                document.getElementById('ticketSuccess').classList.add('d-none');
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            loadStats();
+            loadPopularMovies();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+@startuml Кинотеатр и Онлайн-Платформа
+
+left to right direction
+
+actor "Гость" as Guest
+actor "Зарегистрированный Пользователь" as User
+actor "Администратор" as Admin
+
+rectangle "Кинотеатр и Онлайн Платформа" {
+  usecase "Просмотр фильмов онлайн" as UC1
+  usecase "Просмотр деталей фильма" as UC3
+  usecase "Чтение отзывов" as UC4
+  usecase "Регистрация" as UC5
+  usecase "Авторизация" as UC6
+  
+  usecase "Бронирование билетов" as UC7
+  usecase "Покупка билетов" as UC8
+  usecase "Оплата онлайн" as UC9
+  usecase "Создание плейлиста" as UC10
+  usecase "Добавление в плейлист" as UC11
+  usecase "Написание отзывов" as UC12
+  usecase "Просмотр истории" as UC13
+  usecase "Получение рекомендаций" as UC14
+  
+  usecase "Управление фильмами" as UC15
+  usecase "Управление сеансами" as UC16
+  usecase "Управление залами" as UC17
+  usecase "Управление пользователями" as UC18
+  usecase "Просмотр статистики" as UC19
+  usecase "Управление рекламой" as UC20
+  usecase "Генерация отчетов" as UC21
+}
+
+' Связи для Гостя
+Guest --> UC1
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+Guest --> UC6
+
+' Связи для Зарегистрированного Пользователя
+User --> UC1
+User --> UC3
+User --> UC4
+User --> UC7
+User --> UC8
+User --> UC9
+User --> UC10
+User --> UC11
+User --> UC12
+User --> UC13
+User --> UC14
+
+' Связи для Администратора
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+Admin --> UC19
+Admin --> UC20
+Admin --> UC21
+
+' Включения и расширения
+UC8 .> UC7 : include
+UC9 .> UC8 : include
+UC11 .> UC10 : include
+UC14 .> UC13 : extend
+
+' Группировка по функциональным блокам
+note right of UC1
+  **Онлайн просмотр**
+  - Просмотр фильмов
+  - Выбор языка
+  - Трекинг просмотров
+end note
+
+note right of UC7
+  **Бронирование и билеты**
+  - Выбор сеанса
+  - Выбор места
+  - Оплата
+end note
+
+note right of UC10
+  **Персонализация**
+  - Плейлисты
+  - Рекомендации
+  - История
+end note
+
+note right of UC15
+  **Администрирование**
+  - Управление контентом
+  - Расписание
+  - Аналитика
+end note
+
+@enduml

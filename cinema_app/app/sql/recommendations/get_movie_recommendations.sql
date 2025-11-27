@@ -1,0 +1,1 @@
+SELECT * FROM recommend_movie(%(user_id)s);

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Фильмы - Cinema{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-film"></i> Каталог фильмов</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMovieModal">
+        <i class="bi bi-plus-circle"></i> Добавить фильм
+    </button>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="searchInput" placeholder="🔍 Поиск по названию...">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="genreFilter">
+                    <option value="">Все жанры</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="sortBy">
+                    <option value="title">По названию</option>
+                    <option value="rating">По рейтингу</option>
+                    <option value="release_date">По дате выхода</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-secondary w-100" onclick="loadMovies()">
+                    <i class="bi bi-arrow-clockwise"></i> Обновить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="moviesContainer" class="row">
+    <div class="col-12 text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+let allMovies = [];
+
+async function loadMovies() {
+    try {
+        const response = await axios.get('/movies/');
+        allMovies = response.data;
+        displayMovies(allMovies);
+    } catch (error) {
+        console.error('Ошибка загрузки фильмов:', error);
+        document.getElementById('moviesContainer').innerHTML = `
+            <div class="alert alert-danger">Ошибка загрузки фильмов</div>
+        `;
+    }
+}
+
+function displayMovies(movies) {
+    const container = document.getElementById('moviesContainer');
+
+    if (movies.length === 0) {
+        container.innerHTML = '<div class="col-12"><p class="text-center">Фильмы не найдены</p></div>';
+        return;
+    }
+
+    const html = movies.map(movie => `
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">${movie.title}</h5>
+                    <p class="card-text text-muted">${movie.description || 'Нет описания'}</p>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">⭐ ${movie.rating || 'N/A'}</span>
+                        <span class="badge bg-secondary">🕐 ${movie.duration || 'N/A'}</span>
+                    </div>
+                    <small class="text-muted">Дата выхода: ${movie.release_date || 'Неизвестно'}</small>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-info" onclick="viewMovie(${movie.id})">
+                        <i class="bi bi-eye"></i> Подробнее
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="editMovie(${movie.id})">
+                        <i class="bi bi-pencil"></i> Изменить
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteMovie(${movie.id})">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    container.innerHTML = html;
+}
+
+function viewMovie(id) {
+    window.location.href = `/ui/movies/${id}`;
+}
+
+async function deleteMovie(id) {
+    if (confirm('Вы уверены что хотите удалить этот фильм?')) {
+        try {
+            await axios.delete(`/movies/${id}`);
+            alert('Фильм удален!');
+            loadMovies();
+        } catch (error) {
+            alert('Ошибка удаления фильма');
+        }
+    }
+}
+
+// Поиск
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const search = e.target.value.toLowerCase();
+    const filtered = allMovies.filter(m =>
+        m.title.toLowerCase().includes(search)
+    );
+    displayMovies(filtered);
+});
+
+// Загрузка при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadMovies);
+</script>
+{% endblock %}

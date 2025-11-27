@@ -1,0 +1,1 @@
+SELECT * FROM recommend_movie_based_on_playlists(%(user_id)s);
